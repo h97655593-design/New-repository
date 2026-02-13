@@ -5,114 +5,185 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ناطر | Nater</title>
 
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#4e73df">
-<link rel="apple-touch-icon" href="icon-192.png">
-
 <style>
-body{margin:0;font-family:'Segoe UI',sans-serif;direction:rtl;background:#f4f6f9;transition:.3s}
-.dark{background:#121826;color:#fff}
-header{background:linear-gradient(135deg,#4e73df,#1cc88a);color:#fff;padding:25px;text-align:center}
-nav button{margin:5px;padding:8px 15px;border:none;border-radius:20px;cursor:pointer;font-weight:bold}
-.container{max-width:1100px;margin:auto;padding:20px}
-.card{background:#fff;padding:20px;border-radius:15px;box-shadow:0 8px 20px rgba(0,0,0,.08);margin-bottom:20px}
-.dark .card{background:#1e293b}
-input{width:100%;padding:8px;margin:6px 0;border-radius:10px;border:1px solid #ddd}
-button.main{background:#4e73df;color:#fff;width:100%;padding:8px;border:none;border-radius:10px;cursor:pointer;margin-top:5px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px;margin-top:15px}
-.box{height:80px;border-radius:15px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:bold;cursor:pointer;background:#e74a3b;color:#fff;transition:.3s;position:relative}
-.box.ready{background:#1cc88a;animation:pulse 1s}
-.ready-label{font-size:12px;margin-top:4px}
-.badge{background:#1cc88a;color:#fff;padding:4px 10px;border-radius:20px;display:inline-block;margin-bottom:10px}
-.hidden{display:none}
-@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
-#splash{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#4e73df,#1cc88a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:40px;z-index:9999;transition:.5s}
+body{
+margin:0;
+font-family:'Segoe UI',sans-serif;
+direction:rtl;
+background:#f4f6f9;
+}
+
+header{
+background:linear-gradient(135deg,#4e73df,#1cc88a);
+color:white;
+padding:30px;
+text-align:center;
+}
+
+header h1{margin:0}
+
+.container{
+max-width:1100px;
+margin:auto;
+padding:20px;
+}
+
+.hero{
+background:white;
+padding:30px;
+border-radius:15px;
+box-shadow:0 8px 20px rgba(0,0,0,.08);
+margin-bottom:20px;
+text-align:center;
+}
+
+.section-title{
+margin:30px 0 15px;
+font-size:20px;
+}
+
+.store-grid{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+gap:20px;
+}
+
+.store-card{
+background:white;
+border-radius:15px;
+overflow:hidden;
+box-shadow:0 6px 18px rgba(0,0,0,.08);
+transition:.3s;
+}
+
+.store-card:hover{
+transform:translateY(-5px);
+}
+
+.store-card img{
+width:100%;
+height:160px;
+object-fit:cover;
+}
+
+.store-content{
+padding:15px;
+}
+
+.store-content h3{
+margin:0 0 10px;
+}
+
+button{
+background:#4e73df;
+color:white;
+border:none;
+padding:8px 15px;
+border-radius:10px;
+cursor:pointer;
+}
+
+.number-box{
+margin-top:15px;
+padding:10px;
+border-radius:10px;
+background:#e74a3b;
+color:white;
+text-align:center;
+font-weight:bold;
+}
+
+.number-box.ready{
+background:#1cc88a;
+}
+
+footer{
+text-align:center;
+padding:20px;
+margin-top:30px;
+color:#777;
+}
 </style>
 </head>
 
 <body>
 
-<div id="splash">ناطر</div>
-
 <header>
 <h1>ناطر | Nater</h1>
-<nav>
-<button onclick="showVisitor()">🧍 وضع زائر</button>
-<button onclick="showLogin()">👑 دخول مدير</button>
-<button onclick="toggleDark()">🌙 وضع ليلي</button>
-</nav>
+<p>منصة تنظيم الانتظار للمطاعم والكافيهات والعيادات والصالونات</p>
 </header>
 
 <div class="container">
 
-<div id="login" class="card hidden">
-<h3>دخول المدير</h3>
-<input type="password" id="pass" placeholder="كلمة السر">
-<button class="main" onclick="login()">دخول</button>
+<div class="hero">
+<h2>ابحث عن محلك وشوف إذا طلبك جاهز</h2>
+<input id="search" placeholder="اكتب اسم المحل..." style="width:80%;padding:10px;border-radius:10px;border:1px solid #ddd">
 </div>
 
-<div id="admin" class="hidden">
-<div class="card">
-<h3>إضافة محل</h3>
-<input id="name" placeholder="اسم المحل">
-<input id="start" type="number" placeholder="بداية الأرقام">
-<input id="end" type="number" placeholder="نهاية الأرقام">
-<button class="main" onclick="addStore()">إضافة</button>
-</div>
-</div>
+<h2 class="section-title">المحلات المتاحة</h2>
 
-<div id="stores"></div>
+<div class="store-grid" id="stores"></div>
 
 </div>
+
+<footer>
+© 2025 ناطر - جميع الحقوق محفوظة
+</footer>
 
 <script>
-let password="1234";
-let isAdmin=false;
-let members=JSON.parse(localStorage.getItem("naterMembers"))||[];
 
-function save(){localStorage.setItem("naterMembers",JSON.stringify(members));render();}
-function showLogin(){document.getElementById("login").classList.remove("hidden")}
-function showVisitor(){isAdmin=false;document.getElementById("admin").classList.add("hidden");document.getElementById("login").classList.add("hidden");render()}
-function login(){if(pass.value===password){isAdmin=true;document.getElementById("admin").classList.remove("hidden");document.getElementById("login").classList.add("hidden")}else alert("كلمة السر خطأ")}
-function addStore(){members.push({name:name.value,start:+start.value,end:+end.value,status:{}});save()}
+let stores=[
+{
+name:"مطعم الرياض",
+type:"مطعم",
+image:"https://images.unsplash.com/photo-1555396273-367ea4eb4db5",
+readyNumbers:[5,12]
+},
+{
+name:"كافيه جدة",
+type:"كافيه",
+image:"https://images.unsplash.com/photo-1509042239860-f550ce710b93",
+readyNumbers:[2]
+},
+{
+name:"عيادة الشفاء",
+type:"عيادة",
+image:"https://images.unsplash.com/photo-1580281657521-4a5c4b3b30fa",
+readyNumbers:[10]
+}
+];
 
 function render(){
 let container=document.getElementById("stores");
 container.innerHTML="";
-members.forEach((m,i)=>{
-let readyCount=Object.values(m.status).filter(v=>v).length;
-let html=`<div class="card"><h3>${m.name}</h3><span class="badge">جاهز: ${readyCount}</span><div class="grid">`;
-for(let n=m.start;n<=m.end;n++){
-if(!m.status[n]) m.status[n]=false;
-html+=`<div class="box ${m.status[n]?'ready':''}" ${isAdmin?`onclick="toggle(${i},${n})"`:''}>
-<div>${n}</div>${m.status[n]?'<div class="ready-label">جاهز</div>':''}</div>`;
-}
-html+=`</div></div>`;
-container.innerHTML+=html;
+stores.forEach(store=>{
+container.innerHTML+=`
+<div class="store-card">
+<img src="${store.image}">
+<div class="store-content">
+<h3>${store.name}</h3>
+<button onclick="checkNumber('${store.name}')">ادخل رقمك</button>
+<div id="result-${store.name}" style="margin-top:10px"></div>
+</div>
+</div>
+`;
 });
 }
 
-function toggle(i,n){
-members[i].status[n]=!members[i].status[n];
-beep();
-save();
+function checkNumber(storeName){
+let number=prompt("ادخل رقمك");
+let store=stores.find(s=>s.name===storeName);
+let resultDiv=document.getElementById("result-"+storeName);
+
+if(store.readyNumbers.includes(Number(number))){
+resultDiv.innerHTML=`<div class="number-box ready">رقمك جاهز ✅</div>`;
+}else{
+resultDiv.innerHTML=`<div class="number-box">رقمك غير جاهز ❌</div>`;
 }
-
-function toggleDark(){document.body.classList.toggle("dark")}
-
-function beep(){
-let audio=new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3");
-audio.play();
 }
-
-if ('serviceWorker' in navigator) {navigator.serviceWorker.register('service-worker.js');}
-
-window.addEventListener("load",()=>{
-setTimeout(()=>{document.getElementById("splash").style.opacity="0";
-setTimeout(()=>{document.getElementById("splash").style.display="none"},500)},800);
-});
 
 render();
+
 </script>
 
 </body>
