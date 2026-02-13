@@ -10,27 +10,27 @@ body{
 margin:0;
 font-family:'Segoe UI',sans-serif;
 direction:rtl;
-background:#eef2f7;
+background:#f0f2f7;
 }
 
-.header{
+header{
 background:linear-gradient(135deg,#4e73df,#1cc88a);
 color:white;
 padding:25px;
 text-align:center;
 }
 
-.section{
-padding:20px;
-max-width:1100px;
+.container{
+max-width:1200px;
 margin:auto;
+padding:20px;
 }
 
 .card{
 background:white;
-padding:20px;
 border-radius:15px;
 box-shadow:0 8px 20px rgba(0,0,0,0.08);
+padding:20px;
 margin-bottom:20px;
 }
 
@@ -55,15 +55,13 @@ margin-top:8px;
 
 .grid{
 display:grid;
-grid-template-columns:repeat(auto-fill,minmax(80px,1fr));
+grid-template-columns:repeat(auto-fill,minmax(90px,1fr));
 gap:12px;
 margin-top:20px;
 }
 
 .number-box{
-background:#e74a3b;
-color:white;
-height:80px;
+height:90px;
 border-radius:15px;
 display:flex;
 flex-direction:column;
@@ -72,7 +70,8 @@ justify-content:center;
 cursor:pointer;
 font-weight:bold;
 transition:0.3s;
-position:relative;
+background:#e74a3b;
+color:white;
 }
 
 .number-box.ready{
@@ -84,44 +83,71 @@ transform:scale(1.05);
 }
 
 .ready-label{
-font-size:12px;
-margin-top:4px;
+font-size:13px;
+margin-top:5px;
+}
+
+.store-card{
+background:white;
+border-radius:15px;
+overflow:hidden;
+box-shadow:0 6px 18px rgba(0,0,0,0.08);
+margin-bottom:20px;
+}
+
+.store-card img{
+width:100%;
+height:170px;
+object-fit:cover;
+}
+
+.store-content{
+padding:15px;
 }
 
 .badge{
 background:#1cc88a;
 color:white;
-padding:5px 12px;
+padding:6px 12px;
 border-radius:20px;
+font-size:13px;
 display:inline-block;
-margin-bottom:10px;
+margin-top:5px;
 }
 
+.back-btn{
+background:#858796;
+margin-top:15px;
+}
 </style>
 </head>
 
 <body>
 
-<div class="header">
+<header>
 <h1>ناطر | Nater</h1>
-</div>
+</header>
 
-<div class="section">
+<div class="container">
 
 <div class="card">
 <h3>إضافة محل</h3>
 <input id="name" placeholder="اسم المحل">
+<input id="image" placeholder="رابط صورة (اختياري)">
 <select id="type">
 <option value="مطعم">مطعم</option>
+<option value="كافيه">كافيه</option>
 <option value="عيادة">عيادة</option>
 <option value="صالون">صالون</option>
 </select>
-<input id="start" type="number" placeholder="بداية الأرقام">
+<input id="start" type="number" placeholder="بداية الأرقام (لغير الكافيه)">
 <input id="end" type="number" placeholder="نهاية الأرقام">
+<input id="chairs" type="number" placeholder="عدد الكراسي (للكافيه)">
 <button onclick="register()">إضافة</button>
 </div>
 
 <div id="stores"></div>
+<div id="details"></div>
 
 </div>
 
@@ -131,62 +157,101 @@ let members = JSON.parse(localStorage.getItem("naterMembers")) || [];
 
 function saveData(){
 localStorage.setItem("naterMembers",JSON.stringify(members));
-render();
+renderStores();
 }
 
 function register(){
 let m={
 name:name.value,
+image:image.value || "https://via.placeholder.com/400x200",
 type:type.value,
 start:+start.value,
 end:+end.value,
+chairs:+chairs.value||0,
 status:{}
 };
 members.push(m);
 saveData();
 }
 
-function render(){
+function renderStores(){
+document.getElementById("details").innerHTML="";
 let container=document.getElementById("stores");
 container.innerHTML="";
 
 members.forEach((m,i)=>{
 let readyCount = Object.values(m.status).filter(v=>v).length;
 
-let html=`
+container.innerHTML+=`
+<div class="store-card">
+<img src="${m.image}">
+<div class="store-content">
+<h3>${m.name}</h3>
+<p>${m.type}</p>
+<span class="badge">جاهز: ${readyCount}</span>
+<button onclick="openStore(${i})">دخول</button>
+</div>
+</div>
+`;
+});
+}
+
+function openStore(i){
+let m=members[i];
+document.getElementById("stores").innerHTML="";
+
+let content=`
 <div class="card">
 <h2>${m.name}</h2>
-<span class="badge">الأرقام الجاهزة: ${readyCount}</span>
-<div class="grid">
+<img src="${m.image}" style="width:100%;border-radius:12px;margin-bottom:15px;">
 `;
+
+if(m.type==="كافيه"){
+content+=`
+<h3>🪑 الكراسي المتاحة: ${m.chairs}</h3>
+<button onclick="updateChairs(${i},1)">➕</button>
+<button onclick="updateChairs(${i},-1)">➖</button>
+`;
+}else{
+content+=`<div class="grid">`;
 
 for(let n=m.start;n<=m.end;n++){
 if(!m.status[n]) m.status[n]=false;
 
-html+=`
+content+=`
 <div class="number-box ${m.status[n]?'ready':''}"
-onclick="toggle(${i},${n})">
+onclick="toggleNumber(${i},${n})">
 <div>${n}</div>
 ${m.status[n]?'<div class="ready-label">جاهز</div>':''}
 </div>
 `;
 }
 
-html+=`
-</div>
+content+=`</div>`;
+}
+
+content+=`
+<button class="back-btn" onclick="renderStores()">رجوع</button>
 </div>
 `;
 
-container.innerHTML+=html;
-});
+document.getElementById("details").innerHTML=content;
 }
 
-function toggle(i,n){
+function toggleNumber(i,n){
 members[i].status[n]=!members[i].status[n];
 saveData();
+openStore(i);
 }
 
-render();
+function updateChairs(i,val){
+members[i].chairs+=val;
+if(members[i].chairs<0) members[i].chairs=0;
+saveData();
+openStore(i);
+}
+
+renderStores();
 
 </script>
 
