@@ -10,13 +10,13 @@ body{
 margin:0;
 font-family:'Segoe UI',sans-serif;
 direction:rtl;
-background:#eef2f7;
+background:#f1f4f9;
 }
 
 .header{
 background:linear-gradient(135deg,#4e73df,#1cc88a);
 color:white;
-padding:20px;
+padding:25px;
 text-align:center;
 }
 
@@ -46,12 +46,35 @@ margin:auto;
 
 .active{display:block;}
 
-.card, .store-card{
+.card{
 background:white;
+padding:20px;
+border-radius:15px;
+box-shadow:0 5px 15px rgba(0,0,0,0.08);
+margin-bottom:20px;
+}
+
+.store-card{
+background:white;
+border-radius:15px;
+overflow:hidden;
+box-shadow:0 5px 15px rgba(0,0,0,0.08);
+margin-bottom:20px;
+transition:0.3s;
+}
+
+.store-card:hover{
+transform:translateY(-5px);
+}
+
+.store-card img{
+width:100%;
+height:160px;
+object-fit:cover;
+}
+
+.store-content{
 padding:15px;
-border-radius:12px;
-box-shadow:0 4px 10px rgba(0,0,0,0.1);
-margin-bottom:15px;
 }
 
 input,select{
@@ -98,11 +121,16 @@ cursor:pointer;
 .badge{
 background:#1cc88a;
 color:white;
-padding:4px 8px;
+padding:4px 10px;
 border-radius:20px;
 font-size:12px;
-margin-top:5px;
 display:inline-block;
+margin-top:5px;
+}
+
+.back-btn{
+background:#858796;
+margin-top:10px;
 }
 </style>
 </head>
@@ -117,41 +145,33 @@ display:inline-block;
 <button onclick="showSection('cafes')">كافيه</button>
 <button onclick="showSection('clinics')">عيادات</button>
 <button onclick="showSection('salons')">صالونات</button>
-<button onclick="showSection('admin')">لوحة التحكم</button>
 </div>
 </div>
 
-<!-- إضافة محل -->
 <div id="home" class="section active">
 <div class="card">
 <h3>إضافة محل</h3>
 <input id="name" placeholder="اسم المحل">
+<input id="image" placeholder="رابط صورة المحل">
 <select id="type">
 <option value="مطعم">مطعم</option>
 <option value="كافيه">كافيه</option>
 <option value="عيادة">عيادة</option>
 <option value="صالون">صالون</option>
 </select>
-<input id="start" type="number" placeholder="بداية الأرقام (لغير الكافيه)">
+<input id="start" type="number" placeholder="بداية الأرقام">
 <input id="end" type="number" placeholder="نهاية الأرقام">
 <input id="chairs" type="number" placeholder="عدد الكراسي (للكافيه)">
 <button class="action" onclick="register()">إضافة</button>
 </div>
 </div>
 
-<!-- الأقسام -->
-<div id="restaurants" class="section"><h3>🍽 المطاعم</h3><input placeholder="بحث..." onkeyup="search(this,'مطعم')"><div id="restList"></div></div>
-<div id="cafes" class="section"><h3>☕ الكافيهات</h3><input placeholder="بحث..." onkeyup="search(this,'كافيه')"><div id="cafeList"></div></div>
-<div id="clinics" class="section"><h3>🏥 العيادات</h3><input placeholder="بحث..." onkeyup="search(this,'عيادة')"><div id="clinicList"></div></div>
-<div id="salons" class="section"><h3>💈 الصالونات</h3><input placeholder="بحث..." onkeyup="search(this,'صالون')"><div id="salonList"></div></div>
+<div id="restaurants" class="section"><h3>🍽 المطاعم</h3><div id="restList"></div></div>
+<div id="cafes" class="section"><h3>☕ الكافيهات</h3><div id="cafeList"></div></div>
+<div id="clinics" class="section"><h3>🏥 العيادات</h3><div id="clinicList"></div></div>
+<div id="salons" class="section"><h3>💈 الصالونات</h3><div id="salonList"></div></div>
 
-<!-- لوحة التحكم -->
-<div id="admin" class="section">
-<div class="card">
-<h3>لوحة التحكم</h3>
-<div id="adminContent"></div>
-</div>
-</div>
+<div id="details" class="section"></div>
 
 <script>
 
@@ -170,6 +190,7 @@ document.getElementById(id).classList.add("active");
 function register(){
 let m={
 name:name.value,
+image:image.value || "https://via.placeholder.com/400x200",
 type:type.value,
 start:+start.value,
 end:+end.value,
@@ -191,9 +212,12 @@ members.forEach((m,i)=>{
 let readyCount = Object.values(m.status).filter(v=>v).length;
 let html=`
 <div class="store-card">
+<img src="${m.image}">
+<div class="store-content">
 <strong>${m.name}</strong><br>
 <span class="badge">جاهز: ${readyCount}</span>
 <button class="action" onclick="openStore(${i})">دخول</button>
+</div>
 </div>
 `;
 
@@ -206,33 +230,44 @@ if(m.type==="صالون") salonList.innerHTML+=html;
 
 function openStore(i){
 let m=members[i];
-showSection('admin');
-adminContent.innerHTML=`<h3>${m.name}</h3>`;
+showSection('details');
+
+let content=`
+<div class="card">
+<h2>${m.name}</h2>
+<img src="${m.image}" style="width:100%;border-radius:10px;margin-bottom:10px;">
+`;
 
 if(m.type==="كافيه"){
-adminContent.innerHTML+=`
-<h4>🪑 الكراسي المتاحة: ${m.chairs}</h4>
+content+=`
+<h3>🪑 الكراسي المتاحة: ${m.chairs}</h3>
 <button class="action" onclick="updateChairs(${i},1)">➕</button>
 <button class="action" onclick="updateChairs(${i},-1)">➖</button>
 `;
-return;
-}
-
-adminContent.innerHTML+=`<div class="grid" id="grid"></div>`;
-let grid=document.getElementById("grid");
-
+}else{
+content+=`<div class="grid">`;
 for(let n=m.start;n<=m.end;n++){
 if(!m.status[n]) m.status[n]=false;
-let div=document.createElement("div");
-div.className="box "+(m.status[n]?"green":"red");
-div.innerText=n;
-div.onclick=()=>{
-m.status[n]=!m.status[n];
+content+=`
+<div class="box ${m.status[n]?'green':'red'}"
+onclick="toggleNumber(${i},${n})">${n}</div>
+`;
+}
+content+=`</div>`;
+}
+
+content+=`
+<button class="action back-btn" onclick="renderAll();showSection('${m.type==="مطعم"?'restaurants':m.type==="كافيه"?'cafes':m.type==="عيادة"?'clinics':'salons'}')">رجوع</button>
+</div>
+`;
+
+details.innerHTML=content;
+}
+
+function toggleNumber(i,n){
+members[i].status[n]=!members[i].status[n];
 saveData();
 openStore(i);
-};
-grid.appendChild(div);
-}
 }
 
 function updateChairs(i,val){
@@ -240,23 +275,6 @@ members[i].chairs+=val;
 if(members[i].chairs<0) members[i].chairs=0;
 saveData();
 openStore(i);
-}
-
-function search(input,type){
-let value=input.value.toLowerCase();
-let list = members.filter(m=>m.type===type && m.name.toLowerCase().includes(value));
-document.getElementById(type==="مطعم"?"restList":
-type==="كافيه"?"cafeList":
-type==="عيادة"?"clinicList":"salonList").innerHTML="";
-list.forEach((m,i)=>{
-document.getElementById(type==="مطعم"?"restList":
-type==="كافيه"?"cafeList":
-type==="عيادة"?"clinicList":"salonList").innerHTML+=`
-<div class="store-card">
-<strong>${m.name}</strong>
-<button class="action" onclick="openStore(${i})">دخول</button>
-</div>`;
-});
 }
 
 renderAll();
