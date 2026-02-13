@@ -10,14 +10,28 @@ body{
 margin:0;
 font-family:'Segoe UI',sans-serif;
 direction:rtl;
-background:#f0f2f7;
+background:#f4f6f9;
 }
 
 header{
 background:linear-gradient(135deg,#4e73df,#1cc88a);
 color:white;
-padding:25px;
+padding:30px;
 text-align:center;
+}
+
+nav{
+margin-top:15px;
+}
+
+nav button{
+background:white;
+border:none;
+padding:8px 15px;
+border-radius:20px;
+cursor:pointer;
+font-weight:bold;
+margin:3px;
 }
 
 .container{
@@ -26,11 +40,19 @@ margin:auto;
 padding:20px;
 }
 
+.section{
+display:none;
+}
+
+.active{
+display:block;
+}
+
 .card{
 background:white;
+padding:20px;
 border-radius:15px;
 box-shadow:0 8px 20px rgba(0,0,0,0.08);
-padding:20px;
 margin-bottom:20px;
 }
 
@@ -42,7 +64,7 @@ border-radius:10px;
 border:1px solid #ddd;
 }
 
-button{
+button.main-btn{
 background:#4e73df;
 color:white;
 border:none;
@@ -51,6 +73,39 @@ border-radius:10px;
 cursor:pointer;
 width:100%;
 margin-top:8px;
+}
+
+.store-card{
+background:white;
+border-radius:15px;
+overflow:hidden;
+box-shadow:0 6px 18px rgba(0,0,0,0.08);
+margin-bottom:20px;
+transition:0.3s;
+}
+
+.store-card:hover{
+transform:translateY(-5px);
+}
+
+.store-card img{
+width:100%;
+height:180px;
+object-fit:cover;
+}
+
+.store-content{
+padding:15px;
+}
+
+.badge{
+background:#1cc88a;
+color:white;
+padding:6px 12px;
+border-radius:20px;
+font-size:13px;
+display:inline-block;
+margin-top:5px;
 }
 
 .grid{
@@ -87,34 +142,6 @@ font-size:13px;
 margin-top:5px;
 }
 
-.store-card{
-background:white;
-border-radius:15px;
-overflow:hidden;
-box-shadow:0 6px 18px rgba(0,0,0,0.08);
-margin-bottom:20px;
-}
-
-.store-card img{
-width:100%;
-height:170px;
-object-fit:cover;
-}
-
-.store-content{
-padding:15px;
-}
-
-.badge{
-background:#1cc88a;
-color:white;
-padding:6px 12px;
-border-radius:20px;
-font-size:13px;
-display:inline-block;
-margin-top:5px;
-}
-
 .back-btn{
 background:#858796;
 margin-top:15px;
@@ -126,12 +153,29 @@ margin-top:15px;
 
 <header>
 <h1>ناطر | Nater</h1>
+<p>منصة تنظيم الانتظار للمطاعم والكافيهات والعيادات والصالونات</p>
+<nav>
+<button onclick="showSection('home')">الرئيسية</button>
+<button onclick="showSection('add')">تسجيل محل</button>
+<button onclick="showSection('restaurants')">مطاعم</button>
+<button onclick="showSection('cafes')">كافيه</button>
+<button onclick="showSection('clinics')">عيادات</button>
+<button onclick="showSection('salons')">صالونات</button>
+</nav>
 </header>
 
 <div class="container">
 
+<div id="home" class="section active">
 <div class="card">
-<h3>إضافة محل</h3>
+<h2>مرحباً بك في ناطر</h2>
+<p>اختر القسم من الأعلى أو أضف محل جديد.</p>
+</div>
+</div>
+
+<div id="add" class="section">
+<div class="card">
+<h3>تسجيل محل جديد</h3>
 <input id="name" placeholder="اسم المحل">
 <input id="image" placeholder="رابط صورة (اختياري)">
 <select id="type">
@@ -143,11 +187,16 @@ margin-top:15px;
 <input id="start" type="number" placeholder="بداية الأرقام (لغير الكافيه)">
 <input id="end" type="number" placeholder="نهاية الأرقام">
 <input id="chairs" type="number" placeholder="عدد الكراسي (للكافيه)">
-<button onclick="register()">إضافة</button>
+<button class="main-btn" onclick="register()">تسجيل</button>
+</div>
 </div>
 
-<div id="stores"></div>
-<div id="details"></div>
+<div id="restaurants" class="section"><div id="restList"></div></div>
+<div id="cafes" class="section"><div id="cafeList"></div></div>
+<div id="clinics" class="section"><div id="clinicList"></div></div>
+<div id="salons" class="section"><div id="salonList"></div></div>
+
+<div id="details" class="section"></div>
 
 </div>
 
@@ -157,7 +206,12 @@ let members = JSON.parse(localStorage.getItem("naterMembers")) || [];
 
 function saveData(){
 localStorage.setItem("naterMembers",JSON.stringify(members));
-renderStores();
+renderAll();
+}
+
+function showSection(id){
+document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
 }
 
 function register(){
@@ -172,53 +226,60 @@ status:{}
 };
 members.push(m);
 saveData();
+showSection(m.type==="مطعم"?"restaurants":
+m.type==="كافيه"?"cafes":
+m.type==="عيادة"?"clinics":"salons");
 }
 
-function renderStores(){
-document.getElementById("details").innerHTML="";
-let container=document.getElementById("stores");
-container.innerHTML="";
+function renderAll(){
+restList.innerHTML="";
+cafeList.innerHTML="";
+clinicList.innerHTML="";
+salonList.innerHTML="";
 
 members.forEach((m,i)=>{
 let readyCount = Object.values(m.status).filter(v=>v).length;
 
-container.innerHTML+=`
+let card=`
 <div class="store-card">
 <img src="${m.image}">
 <div class="store-content">
 <h3>${m.name}</h3>
-<p>${m.type}</p>
 <span class="badge">جاهز: ${readyCount}</span>
-<button onclick="openStore(${i})">دخول</button>
+<button class="main-btn" onclick="openStore(${i})">دخول</button>
 </div>
 </div>
 `;
+
+if(m.type==="مطعم") restList.innerHTML+=card;
+if(m.type==="كافيه") cafeList.innerHTML+=card;
+if(m.type==="عيادة") clinicList.innerHTML+=card;
+if(m.type==="صالون") salonList.innerHTML+=card;
 });
 }
 
 function openStore(i){
 let m=members[i];
-document.getElementById("stores").innerHTML="";
+showSection('details');
 
-let content=`
+let html=`
 <div class="card">
 <h2>${m.name}</h2>
 <img src="${m.image}" style="width:100%;border-radius:12px;margin-bottom:15px;">
 `;
 
 if(m.type==="كافيه"){
-content+=`
+html+=`
 <h3>🪑 الكراسي المتاحة: ${m.chairs}</h3>
-<button onclick="updateChairs(${i},1)">➕</button>
-<button onclick="updateChairs(${i},-1)">➖</button>
+<button class="main-btn" onclick="updateChairs(${i},1)">➕</button>
+<button class="main-btn" onclick="updateChairs(${i},-1)">➖</button>
 `;
 }else{
-content+=`<div class="grid">`;
+html+=`<div class="grid">`;
 
 for(let n=m.start;n<=m.end;n++){
 if(!m.status[n]) m.status[n]=false;
-
-content+=`
+html+=`
 <div class="number-box ${m.status[n]?'ready':''}"
 onclick="toggleNumber(${i},${n})">
 <div>${n}</div>
@@ -227,15 +288,15 @@ ${m.status[n]?'<div class="ready-label">جاهز</div>':''}
 `;
 }
 
-content+=`</div>`;
+html+=`</div>`;
 }
 
-content+=`
-<button class="back-btn" onclick="renderStores()">رجوع</button>
+html+=`
+<button class="back-btn" onclick="renderAll();showSection('${m.type==="مطعم"?'restaurants':m.type==="كافيه"?'cafes':m.type==="عيادة"?'clinics':'salons'}')">رجوع</button>
 </div>
 `;
 
-document.getElementById("details").innerHTML=content;
+details.innerHTML=html;
 }
 
 function toggleNumber(i,n){
@@ -251,7 +312,7 @@ saveData();
 openStore(i);
 }
 
-renderStores();
+renderAll();
 
 </script>
 
