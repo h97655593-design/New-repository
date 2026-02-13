@@ -10,7 +10,7 @@ body{
 margin:0;
 font-family:'Segoe UI',sans-serif;
 direction:rtl;
-background:#f4f6f9;
+background:#eef2f7;
 }
 
 .header{
@@ -46,15 +46,7 @@ margin:auto;
 
 .active{display:block;}
 
-.card{
-background:white;
-padding:20px;
-border-radius:12px;
-box-shadow:0 4px 10px rgba(0,0,0,0.1);
-margin-bottom:20px;
-}
-
-.store-card{
+.card, .store-card{
 background:white;
 padding:15px;
 border-radius:12px;
@@ -64,7 +56,7 @@ margin-bottom:15px;
 
 input,select{
 width:100%;
-padding:10px;
+padding:8px;
 margin:6px 0;
 border-radius:8px;
 border:1px solid #ddd;
@@ -74,7 +66,7 @@ button.action{
 background:#4e73df;
 color:white;
 border:none;
-padding:10px;
+padding:8px;
 border-radius:8px;
 cursor:pointer;
 width:100%;
@@ -84,8 +76,8 @@ margin-top:5px;
 .grid{
 display:grid;
 grid-template-columns:repeat(auto-fill,minmax(55px,1fr));
-gap:10px;
-margin-top:15px;
+gap:8px;
+margin-top:10px;
 }
 
 .box{
@@ -103,9 +95,14 @@ cursor:pointer;
 .red{background:#e74a3b;}
 .green{background:#1cc88a;}
 
-.result{
-font-weight:bold;
-margin-top:10px;
+.badge{
+background:#1cc88a;
+color:white;
+padding:4px 8px;
+border-radius:20px;
+font-size:12px;
+margin-top:5px;
+display:inline-block;
 }
 </style>
 </head>
@@ -124,10 +121,10 @@ margin-top:10px;
 </div>
 </div>
 
-<!-- الرئيسية -->
+<!-- إضافة محل -->
 <div id="home" class="section active">
 <div class="card">
-<h3>إضافة محل جديد</h3>
+<h3>إضافة محل</h3>
 <input id="name" placeholder="اسم المحل">
 <select id="type">
 <option value="مطعم">مطعم</option>
@@ -142,18 +139,16 @@ margin-top:10px;
 </div>
 </div>
 
-<!-- أقسام -->
-<div id="restaurants" class="section"><h3>🍽 المطاعم</h3><div id="restList"></div></div>
-<div id="cafes" class="section"><h3>☕ الكافيهات</h3><div id="cafeList"></div></div>
-<div id="clinics" class="section"><h3>🏥 العيادات</h3><div id="clinicList"></div></div>
-<div id="salons" class="section"><h3>💈 الصالونات</h3><div id="salonList"></div></div>
+<!-- الأقسام -->
+<div id="restaurants" class="section"><h3>🍽 المطاعم</h3><input placeholder="بحث..." onkeyup="search(this,'مطعم')"><div id="restList"></div></div>
+<div id="cafes" class="section"><h3>☕ الكافيهات</h3><input placeholder="بحث..." onkeyup="search(this,'كافيه')"><div id="cafeList"></div></div>
+<div id="clinics" class="section"><h3>🏥 العيادات</h3><input placeholder="بحث..." onkeyup="search(this,'عيادة')"><div id="clinicList"></div></div>
+<div id="salons" class="section"><h3>💈 الصالونات</h3><input placeholder="بحث..." onkeyup="search(this,'صالون')"><div id="salonList"></div></div>
 
 <!-- لوحة التحكم -->
 <div id="admin" class="section">
 <div class="card">
-<h3>لوحة الماستر</h3>
-<input id="masterPass" type="password" placeholder="كلمة المرور">
-<button class="action" onclick="loginMaster()">دخول</button>
+<h3>لوحة التحكم</h3>
 <div id="adminContent"></div>
 </div>
 </div>
@@ -161,7 +156,6 @@ margin-top:10px;
 <script>
 
 let members = JSON.parse(localStorage.getItem("naterMembers")) || [];
-let masterPassword = "1234";
 
 function saveData(){
 localStorage.setItem("naterMembers",JSON.stringify(members));
@@ -188,16 +182,18 @@ alert("تم إضافة المحل");
 }
 
 function renderAll(){
-document.getElementById("restList").innerHTML="";
-document.getElementById("cafeList").innerHTML="";
-document.getElementById("clinicList").innerHTML="";
-document.getElementById("salonList").innerHTML="";
+restList.innerHTML="";
+cafeList.innerHTML="";
+clinicList.innerHTML="";
+salonList.innerHTML="";
 
 members.forEach((m,i)=>{
+let readyCount = Object.values(m.status).filter(v=>v).length;
 let html=`
 <div class="store-card">
-<strong>${m.name}</strong>
-<button onclick="openStore(${i})">دخول</button>
+<strong>${m.name}</strong><br>
+<span class="badge">جاهز: ${readyCount}</span>
+<button class="action" onclick="openStore(${i})">دخول</button>
 </div>
 `;
 
@@ -215,9 +211,9 @@ adminContent.innerHTML=`<h3>${m.name}</h3>`;
 
 if(m.type==="كافيه"){
 adminContent.innerHTML+=`
-<h2>🪑 الكراسي المتاحة: ${m.chairs}</h2>
-<button onclick="updateChairs(${i},1)">➕</button>
-<button onclick="updateChairs(${i},-1)">➖</button>
+<h4>🪑 الكراسي المتاحة: ${m.chairs}</h4>
+<button class="action" onclick="updateChairs(${i},1)">➕</button>
+<button class="action" onclick="updateChairs(${i},-1)">➖</button>
 `;
 return;
 }
@@ -230,13 +226,11 @@ if(!m.status[n]) m.status[n]=false;
 let div=document.createElement("div");
 div.className="box "+(m.status[n]?"green":"red");
 div.innerText=n;
-
 div.onclick=()=>{
 m.status[n]=!m.status[n];
 saveData();
 openStore(i);
 };
-
 grid.appendChild(div);
 }
 }
@@ -248,12 +242,21 @@ saveData();
 openStore(i);
 }
 
-function loginMaster(){
-if(masterPass.value!==masterPassword){
-alert("كلمة المرور خطأ");
-return;
-}
-adminContent.innerHTML="تم الدخول";
+function search(input,type){
+let value=input.value.toLowerCase();
+let list = members.filter(m=>m.type===type && m.name.toLowerCase().includes(value));
+document.getElementById(type==="مطعم"?"restList":
+type==="كافيه"?"cafeList":
+type==="عيادة"?"clinicList":"salonList").innerHTML="";
+list.forEach((m,i)=>{
+document.getElementById(type==="مطعم"?"restList":
+type==="كافيه"?"cafeList":
+type==="عيادة"?"clinicList":"salonList").innerHTML+=`
+<div class="store-card">
+<strong>${m.name}</strong>
+<button class="action" onclick="openStore(${i})">دخول</button>
+</div>`;
+});
 }
 
 renderAll();
