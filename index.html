@@ -93,7 +93,7 @@ margin-top:10px;
 </div>
 
 <div class="section">
-<h3>🧍‍♂️ الزائر</h3>
+<h3>🧍 الزائر</h3>
 <input id="checkPlace" placeholder="اسم المحل">
 <input id="checkNumber" placeholder="رقمك">
 <button onclick="checkVisitor()">تحقق</button>
@@ -101,8 +101,13 @@ margin-top:10px;
 </div>
 
 <script>
-let members = [];
+
+let members = JSON.parse(localStorage.getItem("naterMembers")) || [];
 let masterPassword = "1234";
+
+function saveData(){
+localStorage.setItem("naterMembers",JSON.stringify(members));
+}
 
 function register(){
 let m={
@@ -114,6 +119,7 @@ chairs:+chairs.value||0,
 status:{}
 };
 members.push(m);
+saveData();
 alert("تم تسجيل العضو");
 }
 
@@ -157,6 +163,7 @@ div.innerText=n;
 
 div.onclick=()=>{
 m.status[n]=!m.status[n];
+saveData();
 openMember(i);
 };
 
@@ -167,6 +174,7 @@ grid.appendChild(div);
 function updateChairs(i,val){
 members[i].chairs+=val;
 if(members[i].chairs<0) members[i].chairs=0;
+saveData();
 openMember(i);
 }
 
@@ -191,6 +199,7 @@ visitorResult.innerHTML="✅ جاهز";
 visitorResult.innerHTML="⏳ غير جاهز";
 }
 }
+
 </script>
 
 </body>
