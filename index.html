@@ -222,6 +222,9 @@ container.innerHTML+=html;
 }
 
 function toggle(i,n){
+  
+if (navigator.vibrate) navigator.vibrate(50);
+
 members[i].status[n]=!members[i].status[n];
 beep();
 save();
@@ -242,3 +245,4 @@ render();
 
 </body>
 </html>
+
