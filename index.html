@@ -7,27 +7,32 @@
 
 <style>
 body{
-font-family:Arial;
-background:#f4f6f9;
+font-family:'Segoe UI',Arial;
+background:#eef1f5;
 margin:0;
 padding:20px;
 direction:rtl;
 }
 
-h1{text-align:center}
+h1{
+text-align:center;
+color:#222;
+}
 
 .section{
 background:white;
 padding:15px;
 margin:15px 0;
-border-radius:10px;
-box-shadow:0 2px 5px rgba(0,0,0,0.1);
+border-radius:12px;
+box-shadow:0 3px 10px rgba(0,0,0,0.08);
 }
 
 input,select,button{
-padding:8px;
+padding:10px;
 margin:5px 0;
 width:100%;
+border-radius:6px;
+border:1px solid #ccc;
 }
 
 button{
@@ -35,10 +40,12 @@ background:#007bff;
 color:white;
 border:none;
 cursor:pointer;
-border-radius:5px;
+font-weight:bold;
 }
 
-button:hover{opacity:0.9}
+button:hover{
+opacity:0.9;
+}
 
 .grid{
 display:grid;
@@ -62,6 +69,12 @@ font-weight:bold;
 .result{
 font-weight:bold;
 margin-top:10px;
+font-size:16px;
+}
+
+.small-btn{
+background:#6c757d;
+margin-top:5px;
 }
 </style>
 </head>
@@ -86,7 +99,7 @@ margin-top:10px;
 </div>
 
 <div class="section">
-<h3>👑 دخول ماستر</h3>
+<h3>👑 لوحة الماستر</h3>
 <input id="masterPass" type="password" placeholder="كلمة المرور">
 <button onclick="loginMaster()">دخول</button>
 <div id="admin"></div>
@@ -110,6 +123,11 @@ localStorage.setItem("naterMembers",JSON.stringify(members));
 }
 
 function register(){
+if(!name.value){
+alert("اكتب اسم المحل");
+return;
+}
+
 let m={
 name:name.value,
 type:type.value,
@@ -118,6 +136,7 @@ end:+end.value,
 chairs:+chairs.value||0,
 status:{}
 };
+
 members.push(m);
 saveData();
 alert("تم تسجيل العضو");
@@ -128,14 +147,25 @@ if(masterPass.value!==masterPassword){
 alert("كلمة المرور خطأ");
 return;
 }
+
 admin.innerHTML="";
+
 members.forEach((m,i)=>{
 admin.innerHTML+=`
-<div style="margin:10px 0">
+<div style="margin:10px 0;padding:8px;border:1px solid #ddd;border-radius:6px">
 <strong>${m.name}</strong> (${m.type})
 <button onclick="openMember(${i})">فتح</button>
+<button class="small-btn" onclick="deleteMember(${i})">حذف</button>
 </div>`;
 });
+}
+
+function deleteMember(i){
+if(confirm("هل تريد حذف العضو؟")){
+members.splice(i,1);
+saveData();
+loginMaster();
+}
 }
 
 function openMember(i){
@@ -147,6 +177,7 @@ admin.innerHTML+=`
 <h2>🪑 الكراسي المتاحة: ${m.chairs}</h2>
 <button onclick="updateChairs(${i},1)">➕</button>
 <button onclick="updateChairs(${i},-1)">➖</button>
+<button class="small-btn" onclick="loginMaster()">رجوع</button>
 `;
 return;
 }
@@ -169,6 +200,8 @@ openMember(i);
 
 grid.appendChild(div);
 }
+
+admin.innerHTML+=`<button class="small-btn" onclick="loginMaster()">رجوع</button>`;
 }
 
 function updateChairs(i,val){
@@ -194,9 +227,9 @@ return;
 let num=checkNumber.value;
 
 if(place.status[num]){
-visitorResult.innerHTML="✅ جاهز";
+visitorResult.innerHTML="✅ رقمك جاهز";
 }else{
-visitorResult.innerHTML="⏳ غير جاهز";
+visitorResult.innerHTML="⏳ لم يجهز بعد";
 }
 }
 
@@ -204,3 +237,5 @@ visitorResult.innerHTML="⏳ غير جاهز";
 
 </body>
 </html>
+
+
