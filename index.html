@@ -5,117 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ناطر | Nater</title>
 
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4e73df">
+<link rel="apple-touch-icon" href="icon-192.png">
+
 <style>
-body{
-margin:0;
-font-family:'Segoe UI',sans-serif;
-direction:rtl;
-background:#f4f6f9;
-transition:0.3s;
-}
-
-.dark{
-background:#1e1e2f;
-color:white;
-}
-
-header{
-background:linear-gradient(135deg,#4e73df,#1cc88a);
-color:white;
-padding:25px;
-text-align:center;
-}
-
-nav button{
-margin:5px;
-padding:8px 15px;
-border:none;
-border-radius:20px;
-cursor:pointer;
-font-weight:bold;
-}
-
-.container{
-max-width:1100px;
-margin:auto;
-padding:20px;
-}
-
-.card{
-background:white;
-padding:20px;
-border-radius:15px;
-box-shadow:0 8px 20px rgba(0,0,0,0.08);
-margin-bottom:20px;
-}
-
-.dark .card{
-background:#2a2a40;
-}
-
-input{
-width:100%;
-padding:8px;
-margin:5px 0;
-border-radius:10px;
-border:1px solid #ddd;
-}
-
-button.main{
-background:#4e73df;
-color:white;
-width:100%;
-padding:8px;
-border:none;
-border-radius:10px;
-cursor:pointer;
-margin-top:5px;
-}
-
-.grid{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(90px,1fr));
-gap:10px;
-margin-top:15px;
-}
-
-.box{
-height:80px;
-border-radius:12px;
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-font-weight:bold;
-cursor:pointer;
-background:#e74a3b;
-color:white;
-transition:0.3s;
-}
-
-.box.ready{
-background:#1cc88a;
-}
-
-.ready-label{
-font-size:12px;
-margin-top:4px;
-}
-
-.badge{
-background:#1cc88a;
-color:white;
-padding:4px 10px;
-border-radius:20px;
-display:inline-block;
-margin-bottom:10px;
-}
-
-.hidden{display:none;}
+body{margin:0;font-family:'Segoe UI',sans-serif;direction:rtl;background:#f4f6f9;transition:.3s}
+.dark{background:#121826;color:#fff}
+header{background:linear-gradient(135deg,#4e73df,#1cc88a);color:#fff;padding:25px;text-align:center}
+nav button{margin:5px;padding:8px 15px;border:none;border-radius:20px;cursor:pointer;font-weight:bold}
+.container{max-width:1100px;margin:auto;padding:20px}
+.card{background:#fff;padding:20px;border-radius:15px;box-shadow:0 8px 20px rgba(0,0,0,.08);margin-bottom:20px}
+.dark .card{background:#1e293b}
+input{width:100%;padding:8px;margin:6px 0;border-radius:10px;border:1px solid #ddd}
+button.main{background:#4e73df;color:#fff;width:100%;padding:8px;border:none;border-radius:10px;cursor:pointer;margin-top:5px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px;margin-top:15px}
+.box{height:80px;border-radius:15px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:bold;cursor:pointer;background:#e74a3b;color:#fff;transition:.3s;position:relative}
+.box.ready{background:#1cc88a;animation:pulse 1s}
+.ready-label{font-size:12px;margin-top:4px}
+.badge{background:#1cc88a;color:#fff;padding:4px 10px;border-radius:20px;display:inline-block;margin-bottom:10px}
+.hidden{display:none}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+#splash{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#4e73df,#1cc88a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:40px;z-index:9999;transition:.5s}
 </style>
 </head>
 
 <body>
+
+<div id="splash">ناطر</div>
 
 <header>
 <h1>ناطر | Nater</h1>
@@ -149,100 +66,54 @@ margin-bottom:10px;
 </div>
 
 <script>
-
 let password="1234";
 let isAdmin=false;
 let members=JSON.parse(localStorage.getItem("naterMembers"))||[];
 
-function save(){
-localStorage.setItem("naterMembers",JSON.stringify(members));
-render();
-}
-
-function showLogin(){
-document.getElementById("login").classList.remove("hidden");
-}
-
-function showVisitor(){
-isAdmin=false;
-document.getElementById("admin").classList.add("hidden");
-document.getElementById("login").classList.add("hidden");
-render();
-}
-
-function login(){
-if(pass.value===password){
-isAdmin=true;
-document.getElementById("admin").classList.remove("hidden");
-document.getElementById("login").classList.add("hidden");
-}else{
-alert("كلمة السر خطأ");
-}
-}
-
-function addStore(){
-members.push({
-name:name.value,
-start:+start.value,
-end:+end.value,
-status:{}
-});
-save();
-}
+function save(){localStorage.setItem("naterMembers",JSON.stringify(members));render();}
+function showLogin(){document.getElementById("login").classList.remove("hidden")}
+function showVisitor(){isAdmin=false;document.getElementById("admin").classList.add("hidden");document.getElementById("login").classList.add("hidden");render()}
+function login(){if(pass.value===password){isAdmin=true;document.getElementById("admin").classList.remove("hidden");document.getElementById("login").classList.add("hidden")}else alert("كلمة السر خطأ")}
+function addStore(){members.push({name:name.value,start:+start.value,end:+end.value,status:{}});save()}
 
 function render(){
 let container=document.getElementById("stores");
 container.innerHTML="";
-
 members.forEach((m,i)=>{
 let readyCount=Object.values(m.status).filter(v=>v).length;
-
-let html=`
-<div class="card">
-<h3>${m.name}</h3>
-<span class="badge">جاهز: ${readyCount}</span>
-<div class="grid">
-`;
-
+let html=`<div class="card"><h3>${m.name}</h3><span class="badge">جاهز: ${readyCount}</span><div class="grid">`;
 for(let n=m.start;n<=m.end;n++){
 if(!m.status[n]) m.status[n]=false;
-
-html+=`
-<div class="box ${m.status[n]?'ready':''}"
-${isAdmin?`onclick="toggle(${i},${n})"`:''}>
-<div>${n}</div>
-${m.status[n]?'<div class="ready-label">جاهز</div>':''}
-</div>
-`;
+html+=`<div class="box ${m.status[n]?'ready':''}" ${isAdmin?`onclick="toggle(${i},${n})"`:''}>
+<div>${n}</div>${m.status[n]?'<div class="ready-label">جاهز</div>':''}</div>`;
 }
-
 html+=`</div></div>`;
 container.innerHTML+=html;
 });
 }
 
 function toggle(i,n){
-  
-if (navigator.vibrate) navigator.vibrate(50);
-
 members[i].status[n]=!members[i].status[n];
 beep();
 save();
 }
 
-function toggleDark(){
-document.body.classList.toggle("dark");
-}
+function toggleDark(){document.body.classList.toggle("dark")}
 
 function beep(){
 let audio=new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3");
 audio.play();
 }
 
-render();
+if ('serviceWorker' in navigator) {navigator.serviceWorker.register('service-worker.js');}
 
+window.addEventListener("load",()=>{
+setTimeout(()=>{document.getElementById("splash").style.opacity="0";
+setTimeout(()=>{document.getElementById("splash").style.display="none"},500)},800);
+});
+
+render();
 </script>
 
 </body>
 </html>
-
