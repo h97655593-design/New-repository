@@ -10,7 +10,7 @@ body{
 margin:0;
 font-family:'Segoe UI',sans-serif;
 direction:rtl;
-background:#f1f4f9;
+background:#eef2f7;
 }
 
 .header{
@@ -20,118 +20,83 @@ padding:25px;
 text-align:center;
 }
 
-.nav{
-display:flex;
-justify-content:center;
-flex-wrap:wrap;
-gap:10px;
-margin-top:10px;
-}
-
-.nav button{
-background:white;
-border:none;
-padding:8px 15px;
-border-radius:20px;
-cursor:pointer;
-font-weight:bold;
-}
-
 .section{
-display:none;
 padding:20px;
 max-width:1100px;
 margin:auto;
 }
 
-.active{display:block;}
-
 .card{
 background:white;
 padding:20px;
 border-radius:15px;
-box-shadow:0 5px 15px rgba(0,0,0,0.08);
+box-shadow:0 8px 20px rgba(0,0,0,0.08);
 margin-bottom:20px;
-}
-
-.store-card{
-background:white;
-border-radius:15px;
-overflow:hidden;
-box-shadow:0 5px 15px rgba(0,0,0,0.08);
-margin-bottom:20px;
-transition:0.3s;
-}
-
-.store-card:hover{
-transform:translateY(-5px);
-}
-
-.store-card img{
-width:100%;
-height:160px;
-object-fit:cover;
-}
-
-.store-content{
-padding:15px;
 }
 
 input,select{
 width:100%;
-padding:8px;
+padding:10px;
 margin:6px 0;
-border-radius:8px;
+border-radius:10px;
 border:1px solid #ddd;
 }
 
-button.action{
+button{
 background:#4e73df;
 color:white;
 border:none;
-padding:8px;
-border-radius:8px;
+padding:10px;
+border-radius:10px;
 cursor:pointer;
 width:100%;
-margin-top:5px;
+margin-top:8px;
 }
 
 .grid{
 display:grid;
-grid-template-columns:repeat(auto-fill,minmax(55px,1fr));
-gap:8px;
-margin-top:10px;
+grid-template-columns:repeat(auto-fill,minmax(80px,1fr));
+gap:12px;
+margin-top:20px;
 }
 
-.box{
-width:55px;
-height:55px;
+.number-box{
+background:#e74a3b;
+color:white;
+height:80px;
+border-radius:15px;
 display:flex;
+flex-direction:column;
 align-items:center;
 justify-content:center;
-border-radius:50%;
-font-weight:bold;
-color:white;
 cursor:pointer;
+font-weight:bold;
+transition:0.3s;
+position:relative;
 }
 
-.red{background:#e74a3b;}
-.green{background:#1cc88a;}
+.number-box.ready{
+background:#1cc88a;
+}
+
+.number-box:hover{
+transform:scale(1.05);
+}
+
+.ready-label{
+font-size:12px;
+margin-top:4px;
+}
 
 .badge{
 background:#1cc88a;
 color:white;
-padding:4px 10px;
+padding:5px 12px;
 border-radius:20px;
-font-size:12px;
 display:inline-block;
-margin-top:5px;
+margin-bottom:10px;
 }
 
-.back-btn{
-background:#858796;
-margin-top:10px;
-}
 </style>
 </head>
 
@@ -139,39 +104,26 @@ margin-top:10px;
 
 <div class="header">
 <h1>ناطر | Nater</h1>
-<div class="nav">
-<button onclick="showSection('home')">الرئيسية</button>
-<button onclick="showSection('restaurants')">مطاعم</button>
-<button onclick="showSection('cafes')">كافيه</button>
-<button onclick="showSection('clinics')">عيادات</button>
-<button onclick="showSection('salons')">صالونات</button>
-</div>
 </div>
 
-<div id="home" class="section active">
+<div class="section">
+
 <div class="card">
 <h3>إضافة محل</h3>
 <input id="name" placeholder="اسم المحل">
-<input id="image" placeholder="رابط صورة المحل">
 <select id="type">
 <option value="مطعم">مطعم</option>
-<option value="كافيه">كافيه</option>
 <option value="عيادة">عيادة</option>
 <option value="صالون">صالون</option>
 </select>
 <input id="start" type="number" placeholder="بداية الأرقام">
 <input id="end" type="number" placeholder="نهاية الأرقام">
-<input id="chairs" type="number" placeholder="عدد الكراسي (للكافيه)">
-<button class="action" onclick="register()">إضافة</button>
-</div>
+<button onclick="register()">إضافة</button>
 </div>
 
-<div id="restaurants" class="section"><h3>🍽 المطاعم</h3><div id="restList"></div></div>
-<div id="cafes" class="section"><h3>☕ الكافيهات</h3><div id="cafeList"></div></div>
-<div id="clinics" class="section"><h3>🏥 العيادات</h3><div id="clinicList"></div></div>
-<div id="salons" class="section"><h3>💈 الصالونات</h3><div id="salonList"></div></div>
+<div id="stores"></div>
 
-<div id="details" class="section"></div>
+</div>
 
 <script>
 
@@ -179,105 +131,62 @@ let members = JSON.parse(localStorage.getItem("naterMembers")) || [];
 
 function saveData(){
 localStorage.setItem("naterMembers",JSON.stringify(members));
-renderAll();
-}
-
-function showSection(id){
-document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-document.getElementById(id).classList.add("active");
+render();
 }
 
 function register(){
 let m={
 name:name.value,
-image:image.value || "https://via.placeholder.com/400x200",
 type:type.value,
 start:+start.value,
 end:+end.value,
-chairs:+chairs.value||0,
 status:{}
 };
 members.push(m);
 saveData();
-alert("تم إضافة المحل");
 }
 
-function renderAll(){
-restList.innerHTML="";
-cafeList.innerHTML="";
-clinicList.innerHTML="";
-salonList.innerHTML="";
+function render(){
+let container=document.getElementById("stores");
+container.innerHTML="";
 
 members.forEach((m,i)=>{
 let readyCount = Object.values(m.status).filter(v=>v).length;
+
 let html=`
-<div class="store-card">
-<img src="${m.image}">
-<div class="store-content">
-<strong>${m.name}</strong><br>
-<span class="badge">جاهز: ${readyCount}</span>
-<button class="action" onclick="openStore(${i})">دخول</button>
+<div class="card">
+<h2>${m.name}</h2>
+<span class="badge">الأرقام الجاهزة: ${readyCount}</span>
+<div class="grid">
+`;
+
+for(let n=m.start;n<=m.end;n++){
+if(!m.status[n]) m.status[n]=false;
+
+html+=`
+<div class="number-box ${m.status[n]?'ready':''}"
+onclick="toggle(${i},${n})">
+<div>${n}</div>
+${m.status[n]?'<div class="ready-label">جاهز</div>':''}
+</div>
+`;
+}
+
+html+=`
 </div>
 </div>
 `;
 
-if(m.type==="مطعم") restList.innerHTML+=html;
-if(m.type==="كافيه") cafeList.innerHTML+=html;
-if(m.type==="عيادة") clinicList.innerHTML+=html;
-if(m.type==="صالون") salonList.innerHTML+=html;
+container.innerHTML+=html;
 });
 }
 
-function openStore(i){
-let m=members[i];
-showSection('details');
-
-let content=`
-<div class="card">
-<h2>${m.name}</h2>
-<img src="${m.image}" style="width:100%;border-radius:10px;margin-bottom:10px;">
-`;
-
-if(m.type==="كافيه"){
-content+=`
-<h3>🪑 الكراسي المتاحة: ${m.chairs}</h3>
-<button class="action" onclick="updateChairs(${i},1)">➕</button>
-<button class="action" onclick="updateChairs(${i},-1)">➖</button>
-`;
-}else{
-content+=`<div class="grid">`;
-for(let n=m.start;n<=m.end;n++){
-if(!m.status[n]) m.status[n]=false;
-content+=`
-<div class="box ${m.status[n]?'green':'red'}"
-onclick="toggleNumber(${i},${n})">${n}</div>
-`;
-}
-content+=`</div>`;
-}
-
-content+=`
-<button class="action back-btn" onclick="renderAll();showSection('${m.type==="مطعم"?'restaurants':m.type==="كافيه"?'cafes':m.type==="عيادة"?'clinics':'salons'}')">رجوع</button>
-</div>
-`;
-
-details.innerHTML=content;
-}
-
-function toggleNumber(i,n){
+function toggle(i,n){
 members[i].status[n]=!members[i].status[n];
 saveData();
-openStore(i);
 }
 
-function updateChairs(i,val){
-members[i].chairs+=val;
-if(members[i].chairs<0) members[i].chairs=0;
-saveData();
-openStore(i);
-}
-
-renderAll();
+render();
 
 </script>
 
