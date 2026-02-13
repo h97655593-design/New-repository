@@ -7,57 +7,83 @@
 
 <style>
 body{
-font-family:'Segoe UI',sans-serif;
 margin:0;
-background:linear-gradient(135deg,#667eea,#764ba2);
+font-family:'Segoe UI',sans-serif;
 direction:rtl;
-color:#333;
+background:#f4f6f9;
 }
 
-.container{
-max-width:800px;
-margin:auto;
-padding:20px;
-}
-
-h1{
-text-align:center;
+.header{
+background:linear-gradient(135deg,#4e73df,#1cc88a);
 color:white;
-margin-bottom:20px;
+padding:20px;
+text-align:center;
+}
+
+.nav{
+display:flex;
+justify-content:center;
+gap:15px;
+margin-top:10px;
+}
+
+.nav button{
+background:white;
+color:#333;
+border:none;
+padding:8px 15px;
+border-radius:20px;
+cursor:pointer;
+font-weight:bold;
+}
+
+.section{
+display:none;
+padding:20px;
+max-width:1000px;
+margin:auto;
+}
+
+.active{
+display:block;
 }
 
 .card{
 background:white;
 padding:20px;
-border-radius:15px;
+border-radius:12px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
 margin-bottom:20px;
-box-shadow:0 10px 20px rgba(0,0,0,0.15);
 }
 
 input,select{
 width:100%;
-padding:12px;
+padding:10px;
 margin:6px 0;
 border-radius:8px;
 border:1px solid #ddd;
 }
 
-button{
-width:100%;
-padding:12px;
-margin-top:8px;
-border:none;
-border-radius:8px;
-background:#667eea;
+button.action{
+background:#4e73df;
 color:white;
-font-weight:bold;
+border:none;
+padding:10px;
+border-radius:8px;
 cursor:pointer;
-transition:0.3s;
+width:100%;
 }
 
-button:hover{
-transform:scale(1.02);
-background:#5a67d8;
+.store-card{
+background:white;
+padding:15px;
+border-radius:12px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+margin-bottom:15px;
+}
+
+.store-card h4{
+margin:0 0 5px 0;
 }
 
 .grid{
@@ -77,88 +103,121 @@ border-radius:50%;
 font-weight:bold;
 color:white;
 cursor:pointer;
-transition:0.2s;
 }
 
-.red{background:#e53e3e;}
-.green{background:#38a169;}
-
-.box:hover{
-transform:scale(1.1);
-}
+.red{background:#e74a3b;}
+.green{background:#1cc88a;}
 
 .result{
 font-weight:bold;
 margin-top:10px;
-font-size:16px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-
+<div class="header">
 <h1>ناطر | Nater</h1>
+<div class="nav">
+<button onclick="showSection('home')">الرئيسية</button>
+<button onclick="showSection('add')">إضافة محل</button>
+<button onclick="showSection('admin')">لوحة التحكم</button>
+</div>
+</div>
 
+<!-- الصفحة الرئيسية -->
+<div id="home" class="section active">
+<h3>المحلات المتاحة</h3>
+<div id="storesList"></div>
+</div>
+
+<!-- إضافة محل -->
+<div id="add" class="section">
 <div class="card">
-<h3>👤 تسجيل عضو</h3>
+<h3>إضافة محل جديد</h3>
 <input id="name" placeholder="اسم المحل">
 <select id="type">
-<option value="restaurant">مطعم</option>
-<option value="salon">صالون</option>
-<option value="clinic">عيادة</option>
-<option value="cafe">كافيه</option>
+<option value="مطعم">مطعم</option>
+<option value="صالون">صالون</option>
+<option value="عيادة">عيادة</option>
+<option value="كافيه">كافيه</option>
 </select>
 <input id="start" type="number" placeholder="بداية الأرقام">
 <input id="end" type="number" placeholder="نهاية الأرقام">
-<input id="chairs" type="number" placeholder="عدد الكراسي (للكافيه)">
-<button onclick="register()">تسجيل</button>
+<button class="action" onclick="register()">إضافة</button>
+</div>
 </div>
 
+<!-- لوحة التحكم -->
+<div id="admin" class="section">
 <div class="card">
-<h3>👑 لوحة الماستر</h3>
+<h3>لوحة الماستر</h3>
 <input id="masterPass" type="password" placeholder="كلمة المرور">
-<button onclick="loginMaster()">دخول</button>
-<div id="admin"></div>
+<button class="action" onclick="loginMaster()">دخول</button>
+<div id="adminContent"></div>
 </div>
-
-<div class="card">
-<h3>🧍 الزائر</h3>
-<input id="checkPlace" placeholder="اسم المحل">
-<input id="checkNumber" placeholder="رقمك">
-<button onclick="checkVisitor()">تحقق</button>
-<div class="result" id="visitorResult"></div>
-</div>
-
 </div>
 
 <script>
+
 let members = JSON.parse(localStorage.getItem("naterMembers")) || [];
 let masterPassword = "1234";
 
 function saveData(){
 localStorage.setItem("naterMembers",JSON.stringify(members));
+renderStores();
+}
+
+function showSection(id){
+document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
 }
 
 function register(){
-if(!name.value){
-alert("اكتب اسم المحل");
-return;
-}
-
 let m={
 name:name.value,
 type:type.value,
 start:+start.value,
 end:+end.value,
-chairs:+chairs.value||0,
 status:{}
 };
-
 members.push(m);
 saveData();
-alert("تم تسجيل العضو");
+alert("تم إضافة المحل");
+showSection('home');
+}
+
+function renderStores(){
+let list=document.getElementById("storesList");
+list.innerHTML="";
+members.forEach((m,i)=>{
+list.innerHTML+=`
+<div class="store-card">
+<h4>${m.name}</h4>
+<p>${m.type}</p>
+<button onclick="openStore(${i})">دخول</button>
+</div>
+`;
+});
+}
+
+function openStore(i){
+let m=members[i];
+showSection('home');
+document.getElementById("storesList").innerHTML=`
+<h3>${m.name}</h3>
+<div class="grid" id="grid"></div>
+`;
+let grid=document.getElementById("grid");
+
+for(let n=m.start;n<=m.end;n++){
+if(!m.status[n]) m.status[n]=false;
+let div=document.createElement("div");
+div.className="box "+(m.status[n]?"green":"red");
+div.innerText=n;
+grid.appendChild(div);
+}
 }
 
 function loginMaster(){
@@ -166,78 +225,11 @@ if(masterPass.value!==masterPassword){
 alert("كلمة المرور خطأ");
 return;
 }
-
-admin.innerHTML="";
-members.forEach((m,i)=>{
-admin.innerHTML+=`
-<div style="margin:10px 0;padding:10px;border:1px solid #eee;border-radius:8px">
-<strong>${m.name}</strong> (${m.type})
-<button onclick="openMember(${i})">فتح</button>
-</div>`;
-});
+adminContent.innerHTML="تم الدخول بنجاح";
 }
 
-function openMember(i){
-let m=members[i];
-admin.innerHTML=`<h3>${m.name}</h3>`;
+renderStores();
 
-if(m.type==="cafe"){
-admin.innerHTML+=`
-<h2>🪑 الكراسي المتاحة: ${m.chairs}</h2>
-<button onclick="updateChairs(${i},1)">➕</button>
-<button onclick="updateChairs(${i},-1)">➖</button>
-`;
-return;
-}
-
-admin.innerHTML+=`<div class="grid" id="grid"></div>`;
-let grid=document.getElementById("grid");
-
-for(let n=m.start;n<=m.end;n++){
-if(!m.status[n]) m.status[n]=false;
-
-let div=document.createElement("div");
-div.className="box "+(m.status[n]?"green":"red");
-div.innerText=n;
-
-div.onclick=()=>{
-m.status[n]=!m.status[n];
-saveData();
-openMember(i);
-};
-
-grid.appendChild(div);
-}
-}
-
-function updateChairs(i,val){
-members[i].chairs+=val;
-if(members[i].chairs<0) members[i].chairs=0;
-saveData();
-openMember(i);
-}
-
-function checkVisitor(){
-let place=members.find(m=>m.name===checkPlace.value);
-
-if(!place){
-visitorResult.innerHTML="❌ المحل غير موجود";
-return;
-}
-
-if(place.type==="cafe"){
-visitorResult.innerHTML="🪑 الكراسي المتاحة: "+place.chairs;
-return;
-}
-
-let num=checkNumber.value;
-
-if(place.status[num]){
-visitorResult.innerHTML="✅ رقمك جاهز";
-}else{
-visitorResult.innerHTML="⏳ لم يجهز بعد";
-}
-}
 </script>
 
 </body>
