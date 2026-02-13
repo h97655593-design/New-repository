@@ -7,83 +7,101 @@
 
 <style>
 body{
-font-family:'Segoe UI',Arial;
-background:#eef1f5;
+font-family:'Segoe UI',sans-serif;
 margin:0;
-padding:20px;
+background:linear-gradient(135deg,#667eea,#764ba2);
 direction:rtl;
+color:#333;
+}
+
+.container{
+max-width:800px;
+margin:auto;
+padding:20px;
 }
 
 h1{
 text-align:center;
-color:#222;
+color:white;
+margin-bottom:20px;
 }
 
-.section{
+.card{
 background:white;
-padding:15px;
-margin:15px 0;
-border-radius:12px;
-box-shadow:0 3px 10px rgba(0,0,0,0.08);
+padding:20px;
+border-radius:15px;
+margin-bottom:20px;
+box-shadow:0 10px 20px rgba(0,0,0,0.15);
 }
 
-input,select,button{
-padding:10px;
-margin:5px 0;
+input,select{
 width:100%;
-border-radius:6px;
-border:1px solid #ccc;
+padding:12px;
+margin:6px 0;
+border-radius:8px;
+border:1px solid #ddd;
 }
 
 button{
-background:#007bff;
-color:white;
+width:100%;
+padding:12px;
+margin-top:8px;
 border:none;
-cursor:pointer;
+border-radius:8px;
+background:#667eea;
+color:white;
 font-weight:bold;
+cursor:pointer;
+transition:0.3s;
 }
 
 button:hover{
-opacity:0.9;
+transform:scale(1.02);
+background:#5a67d8;
 }
 
 .grid{
 display:grid;
-grid-template-columns:repeat(auto-fill,minmax(60px,1fr));
-gap:8px;
-margin-top:10px;
+grid-template-columns:repeat(auto-fill,minmax(55px,1fr));
+gap:10px;
+margin-top:15px;
 }
 
 .box{
-padding:12px;
-text-align:center;
-color:white;
-border-radius:8px;
-cursor:pointer;
+width:55px;
+height:55px;
+display:flex;
+align-items:center;
+justify-content:center;
+border-radius:50%;
 font-weight:bold;
+color:white;
+cursor:pointer;
+transition:0.2s;
 }
 
-.red{background:#dc3545}
-.green{background:#28a745}
+.red{background:#e53e3e;}
+.green{background:#38a169;}
+
+.box:hover{
+transform:scale(1.1);
+}
 
 .result{
 font-weight:bold;
 margin-top:10px;
 font-size:16px;
 }
-
-.small-btn{
-background:#6c757d;
-margin-top:5px;
-}
 </style>
 </head>
 
 <body>
 
+<div class="container">
+
 <h1>ناطر | Nater</h1>
 
-<div class="section">
+<div class="card">
 <h3>👤 تسجيل عضو</h3>
 <input id="name" placeholder="اسم المحل">
 <select id="type">
@@ -98,14 +116,14 @@ margin-top:5px;
 <button onclick="register()">تسجيل</button>
 </div>
 
-<div class="section">
+<div class="card">
 <h3>👑 لوحة الماستر</h3>
 <input id="masterPass" type="password" placeholder="كلمة المرور">
 <button onclick="loginMaster()">دخول</button>
 <div id="admin"></div>
 </div>
 
-<div class="section">
+<div class="card">
 <h3>🧍 الزائر</h3>
 <input id="checkPlace" placeholder="اسم المحل">
 <input id="checkNumber" placeholder="رقمك">
@@ -113,8 +131,9 @@ margin-top:5px;
 <div class="result" id="visitorResult"></div>
 </div>
 
-<script>
+</div>
 
+<script>
 let members = JSON.parse(localStorage.getItem("naterMembers")) || [];
 let masterPassword = "1234";
 
@@ -149,23 +168,13 @@ return;
 }
 
 admin.innerHTML="";
-
 members.forEach((m,i)=>{
 admin.innerHTML+=`
-<div style="margin:10px 0;padding:8px;border:1px solid #ddd;border-radius:6px">
+<div style="margin:10px 0;padding:10px;border:1px solid #eee;border-radius:8px">
 <strong>${m.name}</strong> (${m.type})
 <button onclick="openMember(${i})">فتح</button>
-<button class="small-btn" onclick="deleteMember(${i})">حذف</button>
 </div>`;
 });
-}
-
-function deleteMember(i){
-if(confirm("هل تريد حذف العضو؟")){
-members.splice(i,1);
-saveData();
-loginMaster();
-}
 }
 
 function openMember(i){
@@ -177,7 +186,6 @@ admin.innerHTML+=`
 <h2>🪑 الكراسي المتاحة: ${m.chairs}</h2>
 <button onclick="updateChairs(${i},1)">➕</button>
 <button onclick="updateChairs(${i},-1)">➖</button>
-<button class="small-btn" onclick="loginMaster()">رجوع</button>
 `;
 return;
 }
@@ -200,8 +208,6 @@ openMember(i);
 
 grid.appendChild(div);
 }
-
-admin.innerHTML+=`<button class="small-btn" onclick="loginMaster()">رجوع</button>`;
 }
 
 function updateChairs(i,val){
@@ -232,10 +238,7 @@ visitorResult.innerHTML="✅ رقمك جاهز";
 visitorResult.innerHTML="⏳ لم يجهز بعد";
 }
 }
-
 </script>
 
 </body>
 </html>
-
-
